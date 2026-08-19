@@ -190,12 +190,12 @@ export default function Projects() {
   const [loadError, setLoadError] = useState(false)
 
   const loadProjects = useCallback(async () => {
-    if (!state.token) {
+    if (!state.user) {
       setProjects([])
       return
     }
     try {
-      const response = await projectsApi.getProjects(state.token)
+      const response = await projectsApi.getProjects()
       setProjects(response.projects ?? [])
       setLoadError(false)
     } catch (err) {
@@ -204,21 +204,21 @@ export default function Projects() {
       setLoadError(true)
       setProjects([])
     }
-  }, [state.token])
+  }, [state.user])
 
   useEffect(() => {
     loadProjects()
   }, [loadProjects])
 
   const handleDelete = async (project: Project) => {
-    if (!state.token) return
+    if (!state.user) return
     setIsDeleting(project.id)
     try {
       // VM(비싼 리소스) 을 먼저 정리한다. 실패하면 기록을 지우지 않는다 — 안 그러면 사용자는
       // 지운 줄 알지만 OpenStack 에 고아 VM 이 남아 한정된 용량을 계속 잡아먹는다.
       if (project.instance_id) {
         try {
-          await mcpApi.destroy(project.instance_id, state.token)
+          await mcpApi.destroy(project.instance_id)
         } catch (destroyErr) {
           console.warn("리소스 삭제 실패:", destroyErr)
           toast({
@@ -229,7 +229,7 @@ export default function Projects() {
           return
         }
       }
-      await projectsApi.deleteProject(project.id, state.token)
+      await projectsApi.deleteProject(project.id)
       toast({ title: "프로젝트 삭제 완료", description: `${project.name}를 삭제했습니다.` })
       setProjects((prev) => (prev ? prev.filter((p) => p.id !== project.id) : prev))
     } catch (err) {

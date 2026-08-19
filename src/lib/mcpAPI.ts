@@ -67,13 +67,12 @@ export const mcpApi = {
     image_tag?: string;
     plan_id?: string;
     env_config?: Record<string, unknown>;
-  }, token?: string): Promise<DeployResponse> => {
+  }): Promise<DeployResponse> => {
     // 배포는 OpenStack VM 생성이라 오래 걸릴 수 있어 넉넉히(90s).
     const res = await fetchWithTimeout(`${DEPLOY_API_BASE_URL}/api/v1/deploy`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(deployData)
     }, 90000);
@@ -81,13 +80,10 @@ export const mcpApi = {
     return data;
   },
 
-  // 리소스 삭제 — 백엔드: DELETE /api/v1/deploy/{instance_id} (Bearer 필요).
-  destroy: async (instance_id: string, token: string) => {
+  // 리소스 삭제 — 사용자 세션 쿠키와 CSRF는 공통 fetch 계층에서 전달한다.
+  destroy: async (instance_id: string) => {
     const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/deploy/${instance_id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
     }, 30000);
     return handleResponse(res);
   }
@@ -122,12 +118,9 @@ function normalizeStatus(raw: unknown): Project["status"] {
 
 export const projectsApi = {
   // 프로젝트 목록 조회
-  getProjects: async (token: string): Promise<ProjectsResponse> => {
+  getProjects: async (): Promise<ProjectsResponse> => {
     const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/projects`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
     });
     const data: ProjectsResponse = await handleResponse(res);
     return {
@@ -149,12 +142,11 @@ export const projectsApi = {
     runtime_env?: string;
     time_slot?: string;
     expected_users?: number | null;
-  }, token: string): Promise<Project> => {
+  }): Promise<Project> => {
     const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/projects`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(projectData)
     });
@@ -162,12 +154,9 @@ export const projectsApi = {
   },
 
   // 프로젝트 삭제
-  deleteProject: async (projectId: number, token: string): Promise<void> => {
+  deleteProject: async (projectId: number): Promise<void> => {
     const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/projects/${projectId}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));

@@ -13,8 +13,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 import { useNavigate, NavLink } from "react-router-dom"
-import { LogOut, Menu, Users } from "lucide-react"
+import { Loader2, LogOut, Menu, Users } from "lucide-react"
 
 const navItems = [
   { to: "/predict", label: "대시보드" },
@@ -31,24 +32,45 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function Navigation() {
   const { state, logout } = useAuth()
+  const { toast } = useToast()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const handleLogout = () => {
-    logout()
-    navigate("/login")
+  const handleLogout = async () => {
+    try {
+      const result = await logout()
+      navigate("/login", { replace: true })
+      if (result.status === "pending") {
+        toast({
+          title: "로그아웃되었습니다",
+          description: "Keycloak 세션 정리는 백그라운드에서 마무리됩니다.",
+        })
+      } else if (result.status === "failed") {
+        toast({
+          title: "IDS에서는 로그아웃되었습니다",
+          description: "Keycloak 세션 정리에 실패했습니다. 다시 로그인하면 기존 SSO 세션이 남아 있을 수 있습니다.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "로그아웃하지 못했습니다",
+        description: error instanceof Error ? error.message : "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      })
+    }
   }
 
   // 인증되지 않은 사용자에게는 네비게이션을 표시하지 않음
-  if (!state.token) {
+  if (!state.user) {
     return null
   }
 
-  // 개발자 로그인(/dev-login)으로 들어온 내부 세션에만 협업(/collab) 진입점을 노출한다.
-  const devSession =
-    typeof window !== "undefined" && window.localStorage.getItem("ids_dev_session") === "1"
+  const canAccessCollab = state.user.roles.some((role) =>
+    ["ids-admin", "ids-developer"].includes(role),
+  )
 
-  const localPart = state.email ? state.email.split("@")[0] : "내 계정"
+  const localPart = state.user.name || state.user.email.split("@")[0] || "내 계정"
   const initials = localPart
     .split(".")
     .map((n) => n[0])
@@ -116,19 +138,23 @@ export function Navigation() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{localPart}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{state.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{state.user.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {devSession && (
+                {canAccessCollab && (
                   <DropdownMenuItem onClick={() => navigate("/collab")}>
                     <Users className="mr-2 h-4 w-4" />
                     <span>협업</span>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>로그아웃</span>
+                <DropdownMenuItem onClick={() => void handleLogout()} disabled={state.loggingOut}>
+                  {state.loggingOut ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="mr-2 h-4 w-4" />
+                  )}
+                  <span>{state.loggingOut ? "로그아웃 중…" : "로그아웃"}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

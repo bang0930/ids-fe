@@ -8,7 +8,6 @@ import { Navigation } from "@/components/navigation";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import DevLogin from "./pages/DevLogin";
 import DemoLayout from "./demo/DemoLayout";
 import DemoOverview from "./pages/demo/Overview";
 import DemoServices from "./pages/demo/Services";
@@ -34,19 +33,18 @@ const queryClient = new QueryClient({
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { state } = useAuth();
-  if (!state.initialized) return null; // 하이드레이션 전 리다이렉트 방지
-  return state.token ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!state.initialized) return null; // /auth/me 확인 전 리다이렉트 방지
+  return state.user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { state } = useAuth();
   if (!state.initialized) return null;
-  return state.token ? <Navigate to="/predict" replace /> : <>{children}</>;
+  return state.user ? <Navigate to="/predict" replace /> : <>{children}</>;
 };
 
-// 랜딩/로그인은 자체 헤더를 쓰므로 공용 상단 네비게이션을 숨긴다.
 // 랜딩/로그인/데모는 자체 헤더를 쓰므로 공용 상단 네비게이션을 숨긴다.
-const CHROMELESS_ROUTES = new Set(["/", "/login", "/dev-login"]);
+const CHROMELESS_ROUTES = new Set(["/", "/login"]);
 const GlobalNav = () => {
   const { pathname } = useLocation();
   if (CHROMELESS_ROUTES.has(pathname) || pathname.startsWith("/demo")) return null;
@@ -79,14 +77,6 @@ const App = () => (
                   element={
                     <PublicRoute>
                       <Login />
-                    </PublicRoute>
-                  }
-                />
-                <Route
-                  path="/dev-login"
-                  element={
-                    <PublicRoute>
-                      <DevLogin />
                     </PublicRoute>
                   }
                 />

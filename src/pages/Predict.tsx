@@ -123,12 +123,12 @@ export default function Predict() {
   const [loadError, setLoadError] = useState(false)
 
   const loadProjects = useCallback(async () => {
-    if (!state.token) {
+    if (!state.user) {
       setProjects([])
       return
     }
     try {
-      const res = await projectsApi.getProjects(state.token)
+      const res = await projectsApi.getProjects()
       setProjects(res.projects ?? [])
       setLoadError(false)
     } catch {
@@ -136,7 +136,7 @@ export default function Predict() {
       setLoadError(true)
       setProjects([])
     }
-  }, [state.token])
+  }, [state.user])
 
   useEffect(() => {
     loadProjects()
@@ -154,8 +154,8 @@ export default function Predict() {
 
   // 2단계: 사용자가 검토 후 배포를 승인했을 때만 호출(block 은 다이얼로그에서 버튼이 없어 도달 불가).
   const runDeploy = async (projectData: ProjectData, predictResponse: PredictResponse) => {
-    if (!state.token) {
-      throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.")
+    if (!state.user) {
+      throw new Error("로그인 세션이 없습니다. 다시 로그인해주세요.")
     }
 
     try {
@@ -175,7 +175,7 @@ export default function Predict() {
       // 인프라(OpenStack) 미가동 시 배포가 실패해도 예측·추천 결과는 보여준다.
       let deployResponse: DeployResponse
       try {
-        deployResponse = await mcpApi.deploy(deployData, state.token)
+        deployResponse = await mcpApi.deploy(deployData)
       } catch (deployErr) {
         deployResponse = {
           accepted: false,
@@ -211,8 +211,7 @@ export default function Predict() {
             time_slot: ctx?.time_slot,
             runtime_env: ctx?.runtime_env,
             expected_users: ctx?.expected_users ?? null,
-          },
-          state.token
+          }
         )
       } catch (projectErr) {
         console.warn("Failed to create project record", projectErr)

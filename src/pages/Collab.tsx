@@ -234,13 +234,14 @@ function CollabShell() {
 export default function Collab() {
   const { state } = useAuth()
 
-  // 내부(개발자 로그인) 세션만 접근. 일반 세션이 URL 로 들어오면 앱으로 돌려보낸다.
-  const devSession =
-    typeof window !== "undefined" && window.localStorage.getItem("ids_dev_session") === "1"
-  if (!devSession) return <Navigate to="/predict" replace />
+  // 임시 localStorage 개발자 세션 대신 Keycloak 역할로 내부 기능 접근을 제한한다.
+  const canAccess = state.user?.roles.some((role) =>
+    ["ids-admin", "ids-developer"].includes(role),
+  )
+  if (!canAccess) return <Navigate to="/predict" replace />
 
   return (
-    <CollabProvider author={state.email ?? "나"}>
+    <CollabProvider author={state.user?.name || state.user?.email || "나"}>
       <CollabShell />
     </CollabProvider>
   )

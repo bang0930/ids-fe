@@ -55,7 +55,7 @@ export default function Settings() {
   const { theme, setTheme } = useTheme()
   const { state } = useAuth()
 
-  const email = state.email ?? "—"
+  const email = state.user?.email ?? "—"
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -67,13 +67,13 @@ export default function Settings() {
 
         <div className="space-y-6">
           {/* 계정 */}
-          <Section title="계정" desc="아주대학교 SSO(Keycloak) 연동 예정 · 현재는 데모 세션입니다.">
+          <Section title="계정" desc="아주대학교 SSO(Keycloak)로 인증된 계정입니다.">
             <div>
               <Row icon={Mail} label="이메일" mono value={email} />
             </div>
             <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              아주대학교 SSO(Keycloak) 연동은 준비 중입니다. 연동되면 SSO가 신원을 확인하며, 비밀번호는 저장하지 않고 별도 가입도 없습니다.
+              SSO가 신원을 확인하며, IDS는 학교 계정 비밀번호나 Keycloak 토큰을 브라우저에 저장하지 않습니다.
             </div>
           </Section>
 

@@ -37,8 +37,8 @@ function LandingHeader() {
             <Link to="/demo">데모</Link>
           </Button>
           <Button asChild size="sm">
-            <Link to={state.token ? "/predict" : "/login"}>
-              {state.token ? "대시보드" : "시작하기"} <ArrowRight className="h-4 w-4" />
+            <Link to={state.user ? "/predict" : "/login"}>
+              {state.user ? "대시보드" : "시작하기"} <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -175,8 +175,8 @@ function Hero() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" variant="hero">
-              <Link to={state.token ? "/predict" : "/login"}>
-                {state.token ? "대시보드로 이동" : "첫 예측 받아보기"}{" "}
+              <Link to={state.user ? "/predict" : "/login"}>
+                {state.user ? "대시보드로 이동" : "첫 예측 받아보기"}{" "}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -453,8 +453,8 @@ function CtaBand() {
             </p>
             <div className="mt-8">
               <Button asChild size="lg" variant="hero">
-                <Link to={state.token ? "/predict" : "/login"}>
-                  {state.token ? "대시보드로 이동" : "GitHub 주소로 시작하기"} <ArrowRight className="h-4 w-4" />
+                <Link to={state.user ? "/predict" : "/login"}>
+                  {state.user ? "대시보드로 이동" : "GitHub 주소로 시작하기"} <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             </div>

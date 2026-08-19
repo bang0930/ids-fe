@@ -17,8 +17,8 @@ GitHub 주소와 한 문장이면 리소스 수요를 예측하고 알맞은 VM 
 ## 인증 — 아주대 SSO 단일
 
 이메일/비밀번호 로그인과 자체 회원가입은 없다. 신원은 **아주대학교 SSO(Keycloak)** 가 확인한다.
-현재는 연동 전이라 데모 세션으로 동작하며, 로그인 화면의 SSO 버튼이 데모 진입점이다.
-(Keycloak redirect/callback 연동은 진행 예정.)
+로그인 버튼은 IDS 백엔드의 Authorization Code + PKCE 흐름을 시작하고, Keycloak 토큰은 백엔드와
+Redis에만 보관한다. 브라우저는 HttpOnly 세션 쿠키를 사용하며 상태 변경 요청에는 CSRF 토큰을 보낸다.
 
 ## 핵심 흐름
 
@@ -101,7 +101,8 @@ Vercel은 조직 레포가 아니라 **병언님 fork**에 연결돼 있다. 그
 FastAPI, 별도 레포. 프론트가 쓰는 주요 엔드포인트:
 
 - `POST /api/v1/plans` — 예측 `{ github_url, natural_language }` → 추천 flavor·`automation_mode`·`predictions_24h`·비용 등
-- `POST /api/v1/deploy` / `DELETE /api/v1/deploy/{instance_id}` — 배포/삭제 (Bearer, `IDS_API_TOKEN` 설정 시)
+- `GET /api/v1/auth/login|me`, `POST /api/v1/auth/logout` — Keycloak 로그인·세션 확인·로그아웃
+- `POST /api/v1/deploy` / `DELETE /api/v1/deploy/{instance_id}` — 배포/삭제 (브라우저 세션 또는 내부 서비스 토큰)
 - `GET|POST|DELETE /api/v1/projects` — 프로젝트 CRUD
 - `POST /api/v1/recommendations/re-evaluate` — 관측→재추천
 
