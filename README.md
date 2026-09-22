@@ -68,7 +68,7 @@ mcp_web/
 
 | 변수 | 개발 기본 | 프로덕션 |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:8000` | `https://api.launcha.cloud` |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | `https://launcha.ajou.app` |
 | `VITE_DEPLOY_API_BASE_URL` | 〃 | 〃 |
 | `VITE_BACKEND_API_BASE_URL` | 〃 | 〃 |
 

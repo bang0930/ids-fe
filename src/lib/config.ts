@@ -9,14 +9,14 @@
  *   DEPLOY/BACKEND base URL이 자동으로 이를 따른다.
  */
 
-const PROD_DEFAULT_API = "https://api.launcha.cloud";
-const PROD_DEFAULT_DEPLOY = "https://api.launcha.cloud";
+const PROD_DEFAULT_API = "https://launcha.ajou.app";
+const PROD_DEFAULT_DEPLOY = "https://launcha.ajou.app";
 const isProdEnv = Boolean(import.meta.env.PROD);
 const isDev = !isProdEnv;
 
 // MCP Core API URL (plans, auth 등 - 8000 포트)
 // 로컬 개발: http://localhost:8000
-// 프로덕션: VITE_API_BASE_URL → 없다면 현재 Origin(또는 api.launcha.cloud) 사용
+// 프로덕션: VITE_API_BASE_URL → 없으면 launcha.ajou.app 사용
 
 // 프론트(Vercel)와 백엔드는 서로 다른 origin 이므로, 미설정 시 프론트 자기 origin 이 아니라
 // 실제 백엔드 기본 도메인으로 폴백해야 대부분의 API 호출이 엉뚱한 호스트로 가지 않는다.
@@ -26,7 +26,7 @@ export const API_BASE_URL =
 
 // MCP 배포 요청 전용 API URL (deploy_main - 8001 포트)
 // 로컬 개발: http://localhost:8000
-// 프로덕션: VITE_DEPLOY_API_BASE_URL → 없으면 api.launcha.cloud
+// 프로덕션: VITE_API_BASE_URL → 없으면 launcha.ajou.app
 export const DEPLOY_API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (isDev ? "http://localhost:8000" : PROD_DEFAULT_DEPLOY);
