@@ -1,12 +1,27 @@
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { GraduationCap, ShieldCheck, FlaskConical, ArrowRight, AlertCircle } from "lucide-react"
 import { Logo } from "@/components/logo"
 
+const LOGIN_ERROR_MESSAGES: Record<string, string> = {
+  sso_denied: "Google 로그인이 취소되었거나 완료되지 않았습니다.",
+  bad_callback: "로그인 응답이 올바르지 않습니다. 다시 로그인해주세요.",
+  session_expired: "로그인 시간이 만료되었습니다. 다시 로그인해주세요.",
+  not_allowed: "이 계정은 IDS 이용 권한이 없습니다. 아주대학교 계정인지 확인해주세요.",
+  auth_failed: "로그인을 완료하지 못했습니다. 다시 로그인해주세요.",
+  temporarily_unavailable: "로그인 서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해주세요.",
+}
+
 export default function Login() {
   const { state, startLogin, refreshSession } = useAuth()
+  const [searchParams] = useSearchParams()
+  const callbackErrorCode = searchParams.get("error")
+  const callbackError = callbackErrorCode
+    ? LOGIN_ERROR_MESSAGES[callbackErrorCode] ?? "로그인을 완료하지 못했습니다. 다시 시도해주세요."
+    : null
+  const displayedError = callbackError ?? state.error
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -52,18 +67,20 @@ export default function Login() {
             </p>
           </div>
 
-          {state.error && (
+          {displayedError && (
             <Alert variant="destructive" className="mb-5">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between gap-3">
-                <span>{state.error}</span>
-                <button
-                  type="button"
-                  className="shrink-0 underline underline-offset-2"
-                  onClick={() => void refreshSession()}
-                >
-                  다시 확인
-                </button>
+                <span>{displayedError}</span>
+                {!callbackError && state.error && (
+                  <button
+                    type="button"
+                    className="shrink-0 underline underline-offset-2"
+                    onClick={() => void refreshSession()}
+                  >
+                    다시 확인
+                  </button>
+                )}
               </AlertDescription>
             </Alert>
           )}
